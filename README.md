@@ -31,3 +31,4 @@ Please try to commit as little as possible as importing the project might destro
 
 #### Other Notes
 - There are likely a few kinks in this method but we should be able to iron them out as we get working.
+- See [here](http://www.fpgadeveloper.com/2014/08/version-control-for-vivado-projects.html) for details on this method.
