@@ -31,6 +31,7 @@ def main():
     # Do image stuff.
     image = Image.open(ifile)
     pixels = image.load()
+    width, height = image.size
     #print(image.mode)
     #image.palette.save("imgp")
 
@@ -41,8 +42,8 @@ def main():
     out24 = 0
 
     # Convert image to raw data, 1 bit per channel.
-    for y in range(600):
-        for x in range(800):
+    for y in range(height):
+        for x in range(width):
             # Get RGB
             rgb = pixels[x, y]
             #print("RGB value: " + str(pixels[x, y]))
