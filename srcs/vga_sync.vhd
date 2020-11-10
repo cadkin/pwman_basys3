@@ -8,7 +8,7 @@ use IEEE.NUMERIC_STD.ALL;
 -- Note: Resolution due to pixel clock - needed 50 MHz, exactly half of built-in clock. How convient.
 entity vga_sync is
     Port(clk    : in std_logic;
-         idx_px : out integer range 0 to 480000 := 0;
+         idx_px : out integer range 0 to 479999 := 0;
          hsync  : out std_logic := '0';
          vsync  : out std_logic := '0';
          blank  : out std_logic);
@@ -29,7 +29,7 @@ architecture behavior of vga_sync is
     constant v_sy : integer := 643;
     constant v_bp : integer := 666;
 
-    constant px_count : integer := 480000;
+    constant px_count : integer := 479999;
 begin
     -- Divide input clock.
     hc: entity work.clkdiv

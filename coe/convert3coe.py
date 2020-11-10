@@ -8,24 +8,27 @@ def main():
     # Pretend like this is good option parsing code that wasn't just copied from SO
     ifile = ""
     ofile = ""
+    one_bit = False;
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"hi:o:",["ifile=","ofile="])
+        opts, args = getopt.getopt(sys.argv[1:],"hi:o:1",["ifile=","ofile=","one-bit="])
     except getopt.GetoptError:
-        print("Usage: " + sys.argv[0] + ' -i <inputfile> -o <outputfile>')
+        print("Usage: " + sys.argv[0] + ' -i <inputfile> -o <outputfile> [-1]')
         sys.exit(-1)
 
     for opt, arg in opts:
         if opt == '-h':
-            print("Usage: " + sys.argv[0] + ' -i <inputfile> -o <outputfile>')
+            print("Usage: " + sys.argv[0] + ' -i <inputfile> -o <outputfile> [-1]')
             sys.exit(0)
         elif opt in ("-i", "--ifile"):
             ifile = arg
         elif opt in ("-o", "--ofile"):
             ofile = arg
+        elif opt in ("-1", "--one-bit"):
+            one_bit = True;
 
     if ifile == "" or ofile == "":
-        print("Usage: " + sys.argv[0] + ' -i <inputfile> -o <outputfile>')
+        print("Usage: " + sys.argv[0] + ' -i <inputfile> -o <outputfile> [-1]')
         sys.exit(-1)
 
     # Do image stuff.
@@ -47,6 +50,10 @@ def main():
             # Get RGB
             rgb = pixels[x, y]
             #print("RGB value: " + str(pixels[x, y]))
+
+            # If image is a one bit image, set all pixels high.
+            if (one_bit & rgb):
+                rgb = 0b111
 
             sft -= 1
             out24 |= (rgb << 3 * sft)
