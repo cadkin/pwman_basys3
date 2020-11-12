@@ -1,7 +1,7 @@
 # pwman_basys3
 Password manager and generator for the BASYS3 prototyping board.
 
-#### Importing the Project
+#### Importing the Project - IGNORE THESE INSTRUCTIONS
 Vivado has very poor support for VCS so the process is overly complicated.
 
 1. Clone the repo.
