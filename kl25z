@@ -1,0 +1,141 @@
+#include <MKL25Z4.H>
+#include <stdio.h>
+#include <time.h>
+#include <iostream>
+#include <ctime>
+#include <unistd.h>
+
+#define MASK(x) (1UL << (x))
+
+// define Debug status bits
+#define DBG_ISR_POS (0)
+#define DBG_MAIN_POS (1)
+
+
+#define DEBUG_PORT PTB
+
+//define port position for inputs (interrupts from basys3)  
+#define POS1 (6) //ports for interrupts
+#define POS2 (7) //
+#define POS3 (4) // for portd
+
+
+//outputs from kl25z
+#define outPOS1 (18)		// on port B   placeholders
+#define outPOS2 (19)	// on port B
+#define outPOS3 (1)		// on port D
+
+
+//intialize the input coming from the basys3
+void init_inputs(void) { 
+	SIM->SCGC5 |=  SIM_SCGC5_PORTD_MASK ;///* enable clock for port D */| SIM_SCGC5_PORTA_MASK;; /* enable clock for port A */
+
+	/* Select GPIO and enable pull-up resistors and interrupts 
+		on falling edges for pins connected to switches */
+	PORTD->PCR[POS1] |= PORT_PCR_MUX(1) | PORT_PCR_PS_MASK | PORT_PCR_PE_MASK | PORT_PCR_IRQC(0x0a); //sw1 //interrupt falling edge
+	PORTD->PCR[POS2] |= PORT_PCR_MUX(1) | PORT_PCR_PS_MASK | PORT_PCR_PE_MASK | PORT_PCR_IRQC(0x0a); //sw2 //interrupt falling edge
+	PORTD->PCR[POS3] |= PORT_PCR_MUX(1) | PORT_PCR_PS_MASK | PORT_PCR_PE_MASK | PORT_PCR_IRQC(0x0a); //sw3 //interrupt falling edge
+	
+	/* Set port D switch bit to inputs */
+	PTD->PDDR &= ~MASK(POS1);
+	PTD->PDDR &= ~MASK(POS2);
+	PTD->PDDR &= ~MASK(POS3); // 
+
+	/* Enable Interrupts */
+	
+	NVIC_SetPriority(PORTD_IRQn, 128); // 0, 64, 128 or 192
+	NVIC_ClearPendingIRQ(PORTD_IRQn); 
+	NVIC_EnableIRQ(PORTD_IRQn);
+}
+
+//initialize outputs from kl25z
+void init_outputs(void) {
+	// Enable clock to ports B and D
+	SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK | SIM_SCGC5_PORTD_MASK;;
+	
+	// Make 3 pins GPIO
+	PORTB->PCR[outPOS1] &= ~PORT_PCR_MUX_MASK;          
+	PORTB->PCR[outPOS1] |= PORT_PCR_MUX(1);          
+	PORTB->PCR[outPOS2] &= ~PORT_PCR_MUX_MASK;          
+	PORTB->PCR[outPOS2] |= PORT_PCR_MUX(1);          
+	PORTD->PCR[outPOS3] &= ~PORT_PCR_MUX_MASK;          
+	PORTD->PCR[outPOS3] |= PORT_PCR_MUX(1);          
+	
+	// Set ports to outputs
+	PTB->PDDR |= MASK(outPOS1) | MASK(outPOS2);
+	PTD->PDDR |= MASK(outPOS3);
+	
+}
+
+//can ignore may use
+void init_debug_signals(void) {
+	SIM->SCGC5 |=  SIM_SCGC5_PORTB_MASK; /* enable clock for port B */
+
+	/* Select GPIO for pins connected to debug signals*/
+	PORTB->PCR[DBG_ISR_POS] |= PORT_PCR_MUX(1);	
+	PORTB->PCR[DBG_MAIN_POS] |= PORT_PCR_MUX(1);	
+	
+	/* Set bits to outputs */
+	PTB->PDDR |= MASK(DBG_ISR_POS) | MASK(DBG_MAIN_POS); 
+	
+	/* Clear output signals initially */
+	PTB->PCOR |= MASK(DBG_ISR_POS) | MASK(DBG_MAIN_POS);
+}
+
+//defines interrupt behavior
+void PORTD_IRQHandler(void) {  
+	DEBUG_PORT->PSOR = MASK(DBG_ISR_POS);
+	// clear pending interrupts
+	NVIC_ClearPendingIRQ(PORTD_IRQn);
+	//NVIC_ClearPendingIRQ(PORTA_IRQn);
+	
+	if ((PORTD->ISFR & MASK(POS1))) { //if input from pos1
+	
+	}
+	
+	if ((PORTD->ISFR & MASK(POS2))) {
+	
+	} 
+	
+	if ((PORTD->ISFR & MASK(POS3))) {
+
+	}
+	// clear status flags 
+	PORTD->ISFR = 0xffffffff;
+	DEBUG_PORT->PCOR = MASK(DBG_ISR_POS);
+}
+
+///Randomize function
+//
+void gen_random(const int len) {
+    
+    char* tmp_s;
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    
+    srand( (unsigned) time(NULL) * getpid());
+    
+    for (int i = 0; i < len; ++i) 
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+  //choose to save generated password or no
+    
+}
+
+
+///Hash function
+
+
+int main (void) {
+	
+	init_inputs();
+	init_outputs();
+	init_debug_signals(); //can ignore
+	__enable_irq();
+	
+	while (1) {
+		  DEBUG_PORT->PTOR = MASK(DBG_MAIN_POS);
+		
+	}
+}
