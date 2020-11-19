@@ -1,13 +1,3 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
-
-entity kp_to_buf is
-    Port ( clk : in STD_LOGIC;
-           ps2_clk : in STD_LOGIC;
-           ps2_data : in STD_LOGIC;
-           pop_val : in STD_LOGIC;
-           buf_size : out STD_LOGIC_VECTOR(5 dolibrary IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
