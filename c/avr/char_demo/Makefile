@@ -22,7 +22,7 @@ OBJCOPY := avr-objcopy
 SIZE := avr-size -A
 GDB := avr-gdb
 
-CFLAGS := -Wall -pedantic -mmcu=$(MCU) -std=c99 -g -O0 -DF_CPU=$(CPU_FREQ)UL
+CFLAGS := -Wall -pedantic -mmcu=$(MCU) -std=c99 -g -O2 -DF_CPU=$(CPU_FREQ)UL
 
 all: $(HEX)
 

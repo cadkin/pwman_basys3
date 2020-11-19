@@ -1,14 +1,55 @@
 // C
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 // AVR
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/delay.h>
+#include <util/delay.h>
+
+volatile uint8_t* term_port = 0;
+volatile uint8_t* term_ddr  = 0;
+
+void term_init(volatile uint8_t* port) {
+    term_port = port;
+    term_ddr = port - 1;
+
+    // Set DDR to out.
+    *term_ddr = 0xFF;
+}
+
+void term_print(char* str) {
+    for (char* str_pos = str; *str_pos != '\0'; str_pos++) {
+        *term_port = (*str_pos) & 0x7F;
+
+        // Clock for 1 ms.
+        *term_port ^= 0x80;
+        _delay_us(500);
+        *term_port ^=0x80;
+        _delay_us(500);
+    }
+}
+
+void term_printf(const char* fmt, ...) {
+    va_list va;
+    va_start(va, fmt);
+
+    // Getting buffer.
+    size_t bn = vsnprintf(0, 0, fmt, va);
+    char* buf = malloc(bn);
+
+    vsprintf(buf, fmt, va);
+    term_print(buf);
+
+    free(buf);
+    va_end(va);
+}
 
 int main() {
-    char* str = "\rHello world, this is being print out over a serial communication between an AVR ATMEGA2560 and a Xillix XC7A35T!";
+    //char* str = "\rHello world, this is being print out over a serial communication between an AVR ATMEGA2560 and a Xillix XC7A35T!";
     //char* str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
     // Ascii Art, why not?
@@ -50,20 +91,12 @@ int main() {
     //,+==iiiiii+,\r\
     //`+=+++;`\r\
     //";
-       char* str_pos;
 
-    // Set DDR for Port C to output.
-    DDRC = 0xFF;
+    term_init(&PORTC);
+    //term_print(str);
 
-    for (str_pos = str; *str_pos != '\0'; str_pos++) {
-        PORTC = (*str_pos) & 0x7F;
-
-        // Clock for 1 ms.
-        PORTC ^= 0x80;
-        _delay_us(500);
-        PORTC ^=0x80;
-        _delay_us(500);
-    }
+    term_printf("\r%s, hello, %d\r", "foobar", 128);
 
     for(;;) {}
 }
+
