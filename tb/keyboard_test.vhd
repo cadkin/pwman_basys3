@@ -15,18 +15,18 @@ signal key2 : STD_LOGIC_VECTOR(10 downto 0) := "00101010011";
 signal key3 : STD_LOGIC_VECTOR(10 downto 0) := "10011010110";
 signal key4 : STD_LOGIC_VECTOR(10 downto 0) := "01110111001";
 signal key5 : STD_LOGIC_VECTOR(10 downto 0) := "11111010010";
-signal clock : STD_LOGIC := '0'; 
+signal clock, reset : STD_LOGIC := '0'; 
 signal c_ps2, d_ps2 : STD_LOGIC := '1';
 signal s, pop : STD_LOGIC := '0';
 signal k_push : STD_LOGIC;
---signal k_push : STD_LOGIC;
+signal keycodes : STD_LOGIC_VECTOR(15 downto 0) := "0000000000000000";
 begin
 
   KEYB: entity work.kp_to_buf(bhv)
-        port map(clk => clock, ps2_clk => c_ps2, ps2_data => d_ps2, pop_val => pop, buf_size => buf_sz, ASCII => ASCII );
+        port map(clk => clock, reset => reset, ps2_clk => c_ps2, ps2_data => d_ps2, pop_val => pop, buf_size => buf_sz, ASCII => ASCII );
 
 k_push <= <<signal KEYB.push : STD_LOGIC >>;
---k_push <= <<signal KEYB.push : STD_LOGIC >>;
+keycodes <= <<signal KEYB.keycodes : STD_LOGIC_VECTOR(15 downto 0) >>;
 
 
 
@@ -53,11 +53,12 @@ k_push <= <<signal KEYB.push : STD_LOGIC >>;
   variable a_sent : integer := 0;
   begin if a_sent = 6 then wait; end if;
     
-    -- Waits 50ns between simulating a keypress
+    -- Waits 200ns between simulating a keypress
     if sending = 0 then sending := sending - 1;
       s <= '0';
+      wait for 100 ns;
       pop <= '1';
-    elsif sending = -1 then sending := 19; pop <= '0'; wait for 50ns; a_sent := a_sent + 1;
+    elsif sending = -1 then sending := 19; pop <= '0'; wait for 200ns; a_sent := a_sent + 1;
     else s <= '1'; sending := sending - 1; end if;
      
     -- Cycle clock during data burst
