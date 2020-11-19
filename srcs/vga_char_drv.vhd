@@ -7,7 +7,6 @@ entity vga_char_drv is
           ascii_wea  : in std_logic;
           ascii_data : in std_logic_vector (7 downto 0);
           ascii_clk  : in std_logic;
-          rst        : in std_logic;
           ascii_full : out std_logic;
           vga_r      : out std_logic_vector (3 downto 0);
           vga_g      : out std_logic_vector (3 downto 0);
@@ -33,6 +32,7 @@ architecture behavior of vga_char_drv is
     signal rom_addr: std_logic_vector(10 downto 0);
     signal rom_data: std_logic_vector(11 downto 0) := x"000";
 
+    signal rst     : std_logic := '0';
     signal clear_fb: std_logic := '0';
 begin
     vga_d: entity work.vga
@@ -114,16 +114,23 @@ begin
             fb_wea <= '1';
             pxg_rom_src_idx := 0;
             pxg_ram_dest_idx := 0;
+            rst <= '0';
         end if;
 
         if (rising_edge(clk)) then
             -- Reset framebuffer if clearing.
             if (clear_fb = '1') then
-                if (pxg_ram_dest_idx = pxg_ram_dest_idx_max) then
-                    clear_fb <= '0';
-                    fb_wea <= '0';
-                end if;
-                pxg_ram_dest_idx := pxg_ram_dest_idx + 1;
+                if (odd_cycle = '0') then
+                    odd_cycle := '1';
+                else
+                    if (pxg_ram_dest_idx = pxg_ram_dest_idx_max) then
+                        clear_fb <= '0';
+                        fb_wea <= '0';
+                    end if;
+                
+                    pxg_ram_dest_idx := pxg_ram_dest_idx + 1;
+                    odd_cycle := '0';
+                 end if;
             end if;
 
             -- If we are copying, increment the address.
@@ -184,7 +191,10 @@ begin
                     case fifo_data(4 downto 0) is
                         when "01000" => cursor_pos := cursor_pos - 1;                   -- Back. (non-destructive)
                         when "01001" => cursor_pos := cursor_pos + 4;                   -- Tab.
-                        when "01101" => cursor_pos := ((cursor_pos / 100) * 100) + 100; -- Carriage Return.
+                        when "01010" => cursor_pos := ((cursor_pos / 100) * 100) + 100; -- Newline.
+                        when "01101" => cursor_pos := ((cursor_pos / 100) * 100);       -- Carriage Return.
+                        when "10001" => cursor_pos := 0;                                -- DC1 - return to position 0.
+                        when "10010" => rst <= '1';                                     -- DC2 - reset.
                         when others => null;
                     end case;
 

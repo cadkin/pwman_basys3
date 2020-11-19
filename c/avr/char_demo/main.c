@@ -10,6 +10,11 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+// Return to top.
+#define DC1 "\x11"
+// Clear screen.
+#define DC2 "\x12"
+
 volatile uint8_t* term_port = 0;
 volatile uint8_t* term_ddr  = 0;
 
@@ -49,54 +54,64 @@ void term_printf(const char* fmt, ...) {
 }
 
 int main() {
-    //char* str = "\rHello world, this is being print out over a serial communication between an AVR ATMEGA2560 and a Xillix XC7A35T!";
+    //char* str = "\nHello world, this is being print out over a serial communication between an AVR ATMEGA2560 and a Xillix XC7A35T!";
     //char* str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
     // Ascii Art, why not?
-    //char* str = "\r\
-    //                                                                    ..;===+.\r\
-    //                                                                .:=iiiiii=+=\r\
-    //                                                             .=i))=;::+)i=+,\r\
-    //                                                          ,=i);)I)))I):=i=;\r\
-    //                                                       .=i==))))ii)))I:i++\r\
-    //                                                     +)+))iiiiiiii))I=i+:'\r\
-    //                                .,:;;++++++;:,.       )iii+:::;iii))+i='\r\
-    //                             .:;++=iiiiiiiiii=++;.    =::,,,:::=i));=+'\r\
-    //                           ,;+==ii)))))))))))ii==+;,      ,,,:=i))+=:\r\
-    //                         ,;+=ii))))))IIIIII))))ii===;.    ,,:=i)=i+\r\
-    //                        ;+=ii)))IIIIITIIIIII))))iiii=+,   ,:=));=,\r\
-    //                      ,+=i))IIIIIITTTTTITIIIIII)))I)i=+,,:+i)=i+\r\
-    //                     ,+i))IIIIIITTTTTTTTTTTTI))IIII))i=::i))i='\r\
-    //                    ,=i))IIIIITLLTTTTTTTTTTIITTTTIII)+;+i)+i`\r\
-    //                    =i))IIITTLTLTTTTTTTTTIITTLLTTTII+:i)ii:'\r\
-    //                   +i))IITTTLLLTTTTTTTTTTTTLLLTTTT+:i)))=,\r\
-    //                   =))ITTTTTTTTTTTLTTTTTTLLLLLLTi:=)IIiii;\r\
-    //                  .i)IIITTTTTTTTLTTTITLLLLLLLT);=)I)))))i;\r\
-    //                  :))IIITTTTTLTTTTTTLLHLLLLL);=)II)IIIIi=:\r\
-    //                  :i)IIITTTTTTTTTLLLHLLHLL)+=)II)ITTTI)i=\r\
-    //                  .i)IIITTTTITTLLLHHLLLL);=)II)ITTTTII)i+\r\
-    //                  =i)IIIIIITTLLLLLLHLL=:i)II)TTTTTTIII)i'\r\
-    //                +i)i)))IITTLLLLLLLLT=:i)II)TTTTLTTIII)i;\r\
-    //              +ii)i:)IITTLLTLLLLT=;+i)I)ITTTTLTTTII))i;\r\
-    //             =;)i=:,=)ITTTTLTTI=:i))I)TTTLLLTTTTTII)i;\r\
-    //           +i)ii::,  +)IIITI+:+i)I))TTTTLLTTTTTII))=,\r\
-    //         :=;)i=:,,    ,i++::i))I)ITTTTTTTTTTIIII)=+'\r\
-    //       .+ii)i=::,,   ,,::=i)))iIITTTTTTTTIIIII)=+\r\
-    //      ,==)ii=;:,,,,:::=ii)i)iIIIITIIITIIII))i+:'\r\
-    //     +=:))i==;:::;=iii)+)=  `:i)))IIIII)ii+'\r\
-    //   .+=:))iiiiiiii)))+ii;\r\
-    //  .+=;))iiiiii)));ii+\r\
-    // .+=i:)))))))=+ii+\r\
-    //.;==i+::::=)i=;\r\
-    //,+==iiiiii+,\r\
-    //`+=+++;`\r\
-    //";
+    char* str = "\n\
+                                                                        ..;===+.\n\
+                                                                    .:=iiiiii=+=\n\
+                                                                 .=i))=;::+)i=+,\n\
+                                                              ,=i);)I)))I):=i=;\n\
+                                                           .=i==))))ii)))I:i++\n\
+                                                         +)+))iiiiiiii))I=i+:'\n\
+                                    .,:;;++++++;:,.       )iii+:::;iii))+i='\n\
+                                 .:;++=iiiiiiiiii=++;.    =::,,,:::=i));=+'\n\
+                               ,;+==ii)))))))))))ii==+;,      ,,,:=i))+=:\n\
+                             ,;+=ii))))))IIIIII))))ii===;.    ,,:=i)=i+\n\
+                            ;+=ii)))IIIIITIIIIII))))iiii=+,   ,:=));=,\n\
+                          ,+=i))IIIIIITTTTTITIIIIII)))I)i=+,,:+i)=i+\n\
+                         ,+i))IIIIIITTTTTTTTTTTTI))IIII))i=::i))i='\n\
+                        ,=i))IIIIITLLTTTTTTTTTTIITTTTIII)+;+i)+i`\n\
+                        =i))IIITTLTLTTTTTTTTTIITTLLTTTII+:i)ii:'\n\
+                       +i))IITTTLLLTTTTTTTTTTTTLLLTTTT+:i)))=,\n\
+                       =))ITTTTTTTTTTTLTTTTTTLLLLLLTi:=)IIiii;\n\
+                      .i)IIITTTTTTTTLTTTITLLLLLLLT);=)I)))))i;\n\
+                      :))IIITTTTTLTTTTTTLLHLLLLL);=)II)IIIIi=:\n\
+                      :i)IIITTTTTTTTTLLLHLLHLL)+=)II)ITTTI)i=\n\
+                      .i)IIITTTTITTLLLHHLLLL);=)II)ITTTTII)i+\n\
+                      =i)IIIIIITTLLLLLLHLL=:i)II)TTTTTTIII)i'\n\
+                    +i)i)))IITTLLLLLLLLT=:i)II)TTTTLTTIII)i;\n\
+                  +ii)i:)IITTLLTLLLLT=;+i)I)ITTTTLTTTII))i;\n\
+                 =;)i=:,=)ITTTTLTTI=:i))I)TTTLLLTTTTTII)i;\n\
+               +i)ii::,  +)IIITI+:+i)I))TTTTLLTTTTTII))=,\n\
+             :=;)i=:,,    ,i++::i))I)ITTTTTTTTTTIIII)=+'\n\
+           .+ii)i=::,,   ,,::=i)))iIITTTTTTTTIIIII)=+\n\
+          ,==)ii=;:,,,,:::=ii)i)iIIIITIIITIIII))i+:'\n\
+         +=:))i==;:::;=iii)+)=  `:i)))IIIII)ii+'\n\
+       .+=:))iiiiiiii)))+ii;\n\
+      .+=;))iiiiii)));ii+\n\
+     .+=i:)))))))=+ii+\n\
+    .;==i+::::=)i=;\n\
+    ,+==iiiiii+,\n\
+    `+=+++;`\n\
+    ";
+
+    srand(4);
 
     term_init(&PORTC);
-    //term_print(str);
 
-    term_printf("\r%s, hello, %d\r", "foobar", 128);
+    term_print(DC2);
 
-    for(;;) {}
+    //for (int i = 0; i < 7500; i++) {
+    //    term_printf("%c", (rand() % 2) ? '/' : '\\');
+    //}
+
+    for(;;) {
+        term_printf("%s\n", str);
+        _delay_ms(2000);
+
+        term_printf("%s", DC2);
+    }
 }
 
