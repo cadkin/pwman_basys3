@@ -8,16 +8,21 @@ entity din_to_ascii is
 end din_to_ascii;
 
 architecture bhv of din_to_ascii is
+    signal shift : std_logic := '0';
+    
 begin
+
     
-    --Simple case statement to determine uppercase or lowercase letters 
-    --Numbers are include, backspace and enter as well
+    /* detect when its a new key code but it needs to be shifted.
+       it helps prevent converting when there is no code to convert. */
     
+    shift <= '1' when keycodes(15 downto 8) = x"F0" and (keycodes(7 downto 0) = x"12" or keycodes(7 downto 0) = x"59") else '0';
+   
     process(all)
     begin
-
+       
         -- 12 is left shift, 59 is right shift
-        if keycodes(15 downto 8) = x"12" or keycodes(15 downto 8) = x"59" then
+        if shift = '0' and (keycodes(15 downto 8) = x"12" or keycodes(15 downto 8) = x"59") then
             case keycodes(7 downto 0) is
                   WHEN x"1C" => ascii <= x"41"; --A
                   WHEN x"32" => ascii <= x"42"; --B
@@ -70,64 +75,63 @@ begin
              end case;
          
          --lowercase letters and numbers, keys that don't need shift or control
-         --i did not worry about control commands (yet?)  
-         --if prevCode is e0 then wait until f0 and other keycode are sent to be converted
-         
-         elsif(keycodes(15 downto 8) /= x"E0") then 
+         --i did not worry about control commands (yet?) 
+          
+         elsif(shift = '0' and keycodes(15 downto 8) = x"F0") then 
             case keycodes(7 downto 0) is
-              WHEN x"1C" => ascii <= x"61"; --a
-              WHEN x"32" => ascii <= x"62"; --b
-              WHEN x"21" => ascii <= x"63"; --c
-              WHEN x"23" => ascii <= x"64"; --d
-              WHEN x"24" => ascii <= x"65"; --e
-              WHEN x"2B" => ascii <= x"66"; --f
-              WHEN x"34" => ascii <= x"67"; --g
-              WHEN x"33" => ascii <= x"68"; --h
-              WHEN x"43" => ascii <= x"69"; --i
-              WHEN x"3B" => ascii <= x"6A"; --j
-              WHEN x"42" => ascii <= x"6B"; --k
-              WHEN x"4B" => ascii <= x"6C"; --l
-              WHEN x"3A" => ascii <= x"6D"; --m
-              WHEN x"31" => ascii <= x"6E"; --n
-              WHEN x"44" => ascii <= x"6F"; --o
-              WHEN x"4D" => ascii <= x"70"; --p
-              WHEN x"15" => ascii <= x"71"; --q
-              WHEN x"2D" => ascii <= x"72"; --r
-              WHEN x"1B" => ascii <= x"73"; --s
-              WHEN x"2C" => ascii <= x"74"; --t
-              WHEN x"3C" => ascii <= x"75"; --u
-              WHEN x"2A" => ascii <= x"76"; --v
-              WHEN x"1D" => ascii <= x"77"; --w
-              WHEN x"22" => ascii <= x"78"; --x
-              WHEN x"35" => ascii <= x"79"; --y
-              WHEN x"1A" => ascii <= x"7A"; --z
-              WHEN x"45" => ascii <= x"30"; --0
-              WHEN x"16" => ascii <= x"31"; --1
-              WHEN x"1E" => ascii <= x"32"; --2
-              WHEN x"26" => ascii <= x"33"; --3
-              WHEN x"25" => ascii <= x"34"; --4
-              WHEN x"2E" => ascii <= x"35"; --5
-              WHEN x"36" => ascii <= x"36"; --6
-              WHEN x"3D" => ascii <= x"37"; --7
-              WHEN x"3E" => ascii <= x"38"; --8
-              WHEN x"46" => ascii <= x"39"; --9
-              WHEN x"52" => ascii <= x"27"; --'
-              WHEN x"41" => ascii <= x"2C"; --,
-              WHEN x"4E" => ascii <= x"2D"; ---
-              WHEN x"49" => ascii <= x"2E"; --.
-              WHEN x"4A" => ascii <= x"2F"; --/
-              WHEN x"4C" => ascii <= x"3B"; --;
-              WHEN x"55" => ascii <= x"3D"; --=
-              WHEN x"54" => ascii <= x"5B"; --[
-              WHEN x"5D" => ascii <= x"5C"; --\
-              WHEN x"5B" => ascii <= x"5D"; --]
-              WHEN x"0E" => ascii <= x"60"; --`
-              WHEN x"29" => ascii <= x"20"; --space
-              WHEN x"66" => ascii <= x"08"; --backspace (BS control code)
-              WHEN x"0D" => ascii <= x"09"; --tab (HT control code)
-              WHEN x"5A" => ascii <= x"0D"; --enter (CR control code)
-              WHEN x"76" => ascii <= x"1B"; --escape (ESC control code)
-              WHEN others => NULL;
+                  WHEN x"1C" => ascii <= x"61"; --a
+                  WHEN x"32" => ascii <= x"62"; --b
+                  WHEN x"21" => ascii <= x"63"; --c
+                  WHEN x"23" => ascii <= x"64"; --d
+                  WHEN x"24" => ascii <= x"65"; --e
+                  WHEN x"2B" => ascii <= x"66"; --f
+                  WHEN x"34" => ascii <= x"67"; --g
+                  WHEN x"33" => ascii <= x"68"; --h
+                  WHEN x"43" => ascii <= x"69"; --i
+                  WHEN x"3B" => ascii <= x"6A"; --j
+                  WHEN x"42" => ascii <= x"6B"; --k
+                  WHEN x"4B" => ascii <= x"6C"; --l
+                  WHEN x"3A" => ascii <= x"6D"; --m
+                  WHEN x"31" => ascii <= x"6E"; --n
+                  WHEN x"44" => ascii <= x"6F"; --o
+                  WHEN x"4D" => ascii <= x"70"; --p
+                  WHEN x"15" => ascii <= x"71"; --q
+                  WHEN x"2D" => ascii <= x"72"; --r
+                  WHEN x"1B" => ascii <= x"73"; --s
+                  WHEN x"2C" => ascii <= x"74"; --t
+                  WHEN x"3C" => ascii <= x"75"; --u
+                  WHEN x"2A" => ascii <= x"76"; --v
+                  WHEN x"1D" => ascii <= x"77"; --w
+                  WHEN x"22" => ascii <= x"78"; --x
+                  WHEN x"35" => ascii <= x"79"; --y
+                  WHEN x"1A" => ascii <= x"7A"; --z
+                  WHEN x"45" => ascii <= x"30"; --0
+                  WHEN x"16" => ascii <= x"31"; --1
+                  WHEN x"1E" => ascii <= x"32"; --2
+                  WHEN x"26" => ascii <= x"33"; --3
+                  WHEN x"25" => ascii <= x"34"; --4
+                  WHEN x"2E" => ascii <= x"35"; --5
+                  WHEN x"36" => ascii <= x"36"; --6
+                  WHEN x"3D" => ascii <= x"37"; --7
+                  WHEN x"3E" => ascii <= x"38"; --8
+                  WHEN x"46" => ascii <= x"39"; --9
+                  WHEN x"52" => ascii <= x"27"; --'
+                  WHEN x"41" => ascii <= x"2C"; --,
+                  WHEN x"4E" => ascii <= x"2D"; ---
+                  WHEN x"49" => ascii <= x"2E"; --.
+                  WHEN x"4A" => ascii <= x"2F"; --/
+                  WHEN x"4C" => ascii <= x"3B"; --;
+                  WHEN x"55" => ascii <= x"3D"; --=
+                  WHEN x"54" => ascii <= x"5B"; --[
+                  WHEN x"5D" => ascii <= x"5C"; --\
+                  WHEN x"5B" => ascii <= x"5D"; --]
+                  WHEN x"0E" => ascii <= x"60"; --`
+                  WHEN x"29" => ascii <= x"20"; --space
+                  WHEN x"66" => ascii <= x"08"; --backspace (BS control code)
+                  WHEN x"0D" => ascii <= x"09"; --tab (HT control code)
+                  WHEN x"5A" => ascii <= x"0D"; --enter (CR control code)
+                  WHEN x"76" => ascii <= x"1B"; --escape (ESC control code)
+                  WHEN others => NULL;
           end case;
        end if;
        end process;    
