@@ -11,7 +11,7 @@ entity din_to_ascii is
 end din_to_ascii;
 
 architecture bhv of din_to_ascii is
-    signal shift : std_logic := '0';
+    signal shift, pshift : std_logic := '0';
     signal ascii_update : std_logic := '0';
     
 begin
@@ -20,15 +20,17 @@ begin
     /* detect when its a new key code but it needs to be shifted.
        it helps prevent converting when there is no code to convert. */
     
-    shift <= '1' when (keycodes(7 downto 0) = x"F0" and (keycodes(15 downto 8) = x"12" 
-                 or keycodes(15 downto 8) = x"59")) or (shift = '1' and (keycodes(7 downto 0) = x"12" 
-                 or keycodes(7 downto 0) = x"59")) 
+    shift <= '1' when (keycodes(7 downto 0) = x"F0" and (keycodes(15 downto 8) = x"12" or keycodes(15 downto 8) = x"59")) 
+                 or (pshift = '1' and (keycodes(7 downto 0) = x"12" or keycodes(7 downto 0) = x"59")) 
                  else '0';
+                 
+    pshift <= shift;
    
     process(all)
-        variable count : integer := 0;
-    begin ris: if rising_edge(clk) and kpress = '1' then count := count + 1;
+        variable count : integer range 0 to 4 := 0;
+    begin ris: if rising_edge(clk) then 
     
+        if kpress = '1' then count := count + 1; end if;
         if count > 3 then count := 0; end if;
        
         -- 12 is left shift, 59 is right shift
@@ -85,7 +87,7 @@ begin
                   WHEN OTHERS => NULL;
              end case;
              count := 0;
-                 
+         
          --lowercase letters and numbers, keys that don't need shift or control
          --i did not worry about control commands (yet?) 
           
@@ -147,7 +149,7 @@ begin
                   WHEN others => NULL;
           end case;
           count := 0;
-              
+       
        else ascii_update <= '0';
        end if;
        end if ris; end process;    
