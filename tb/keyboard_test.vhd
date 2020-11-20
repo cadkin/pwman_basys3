@@ -10,11 +10,18 @@ architecture bhv of keyboard_test is
 signal buf_sz : STD_LOGIC_VECTOR(5 downto 0) := "000000";
 signal ASCII : STD_LOGIC_VECTOR(7 downto 0) := "00000000";
 signal input : STD_LOGIC_VECTOR(54 downto 0);
-signal key1 : STD_LOGIC_VECTOR(10 downto 0) := "00001000100";
-signal key2 : STD_LOGIC_VECTOR(10 downto 0) := "00101010011";
-signal key3 : STD_LOGIC_VECTOR(10 downto 0) := "10011010110";
-signal key4 : STD_LOGIC_VECTOR(10 downto 0) := "01110111001";
-signal key5 : STD_LOGIC_VECTOR(10 downto 0) := "11111010010";
+--signal key1 : STD_LOGIC_VECTOR(10 downto 0) := "00001000100";
+--signal key2 : STD_LOGIC_VECTOR(10 downto 0) := "00101010011";
+--signal key3 : STD_LOGIC_VECTOR(10 downto 0) := "10011010110";
+--signal key4 : STD_LOGIC_VECTOR(10 downto 0) := "01110111001";
+--signal key5 : STD_LOGIC_VECTOR(10 downto 0) := "11111010010";
+
+signal key1 : STD_LOGIC_VECTOR(10 downto 0) := "00000001111"; -- F0
+signal key2 : STD_LOGIC_VECTOR(10 downto 0) := "00001001000"; --12 (shift L)
+signal key3 : STD_LOGIC_VECTOR(10 downto 0) := "00001101000"; --16 (1) => !
+signal key4 : STD_LOGIC_VECTOR(10 downto 0) := "00000001111"; -- F0
+signal key5 : STD_LOGIC_VECTOR(10 downto 0) := "00001101000"; -- 16 (1)
+
 signal clock, reset : STD_LOGIC := '0'; 
 signal c_ps2, d_ps2 : STD_LOGIC := '1';
 signal s, pop : STD_LOGIC := '0';
