@@ -84,7 +84,8 @@ begin
                   WHEN x"0E" => ascii <= x"7E"; --~
                   WHEN OTHERS => NULL;
              end case;
-         
+             count := 0;
+                 
          --lowercase letters and numbers, keys that don't need shift or control
          --i did not worry about control commands (yet?) 
           
@@ -145,7 +146,8 @@ begin
                   WHEN x"76" => ascii <= x"1B"; --escape (ESC control code)
                   WHEN others => NULL;
           end case;
-       
+          count := 0;
+              
        else ascii_update <= '0';
        end if;
        end if ris; end process;    
