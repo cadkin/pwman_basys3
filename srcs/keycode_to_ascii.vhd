@@ -11,7 +11,6 @@ entity din_to_ascii is
 end din_to_ascii;
 
 architecture bhv of din_to_ascii is
-    signal shift : std_logic := '0';
     signal ascii_update : std_logic := '0';
     
 begin
