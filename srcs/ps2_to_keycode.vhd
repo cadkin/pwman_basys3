@@ -15,7 +15,6 @@ architecture bhv of ps2_to_keycode is
     signal kb_in : STD_LOGIC_VECTOR(0 to 7) := "00000000";
     signal prev_in : STD_LOGIC_VECTOR(0 to 7) := "00000000";
     signal ukp, prevkp : STD_LOGIC := '0';
-    signal set_kpress : STD_LOGIC := '0';
 begin
   UPDATE: process(all)
   variable i : integer := 0;
@@ -39,31 +38,14 @@ begin
     elsif rising_edge(clk) then 
       if ukp = '1' and prevkp = '0' then
         keycodes(15 downto 8) <= prev_in; keycodes(7 downto 0) <= kb_in;
-        set_kpress <= '1';
+        kpress <= '1';
         prev_in <= kb_in;
 
-      else set_kpress <= '0';
+      else kpress <= '0';
       end if;
     end if setkeycodes;
     
     updtflag: if rising_edge(clk) then prevkp <= ukp; end if updtflag;
   end process PRESS;
-
-  -- Delay 50 Clock cycles
-  HOLD: process(all)
-    variable delay : integer := 0;
-    variable temp : STD_LOGIC := '0';
-  begin ris: if rising_edge(clk) and (delay > 0 or set_kpress = '1') then
-      delay := delay + 1;
-      
-      if delay = 50 then
-        temp := '0'; 
-        delay := 0;
-      else temp := '1'; end if;
-    end if ris;
-    
-    kpress <= temp;
-    
-  end process HOLD;
 
 end bhv;
