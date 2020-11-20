@@ -18,14 +18,14 @@ begin
     /* detect when its a new key code but it needs to be shifted.
        it helps prevent converting when there is no code to convert. */
     
-    shift <= '1' when keycodes(15 downto 8) = x"F0" and (keycodes(7 downto 0) = x"12" or keycodes(7 downto 0) = x"59") else '0';
+    shift <= '1' when keycodes(7 downto 0) = x"F0" and (keycodes(15 downto 8) = x"12" or keycodes(15 downto 8) = x"59") else '0';
    
     process(all)
     begin
        
         -- 12 is left shift, 59 is right shift
-        if shift = '0' and (keycodes(15 downto 8) = x"12" or keycodes(15 downto 8) = x"59") then
-            case keycodes(7 downto 0) is
+        if shift = '0' and (keycodes(7 downto 0) = x"12" or keycodes(7 downto 0) = x"59") then
+            case keycodes(15 downto 8) is
                   WHEN x"1C" => ascii <= x"41"; --A
                   WHEN x"32" => ascii <= x"42"; --B
                   WHEN x"21" => ascii <= x"43"; --C
@@ -79,8 +79,8 @@ begin
          --lowercase letters and numbers, keys that don't need shift or control
          --i did not worry about control commands (yet?) 
           
-         elsif(shift = '0' and keycodes(15 downto 8) = x"F0") then 
-            case keycodes(7 downto 0) is
+         elsif(shift = '0' and keycodes(7 downto 0) = x"F0") then 
+            case keycodes(15 downto 8) is
                   WHEN x"1C" => ascii <= x"61"; --a
                   WHEN x"32" => ascii <= x"62"; --b
                   WHEN x"21" => ascii <= x"63"; --c
