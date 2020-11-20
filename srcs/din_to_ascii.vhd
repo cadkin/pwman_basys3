@@ -4,7 +4,9 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity din_to_ascii is
     Port ( keycodes : in STD_LOGIC_VECTOR (15 downto 0);
-           ASCII : out STD_LOGIC_VECTOR (7 downto 0));
+           kpress : in STD_LOGIC;
+           ASCII : out STD_LOGIC_VECTOR (7 downto 0)
+           newval : out STD_LOGIC);
 end din_to_ascii;
 
 architecture bhv of din_to_ascii is
@@ -135,4 +137,21 @@ begin
           end case;
        end if;
        end process;    
+           
+  -- Delay 50 Clock cycles
+  HOLD: process(all)
+    variable delay : integer := 0;
+    variable temp : STD_LOGIC := '0';
+  begin ris: if rising_edge(clk) and (delay > 0 or kpress = '1') then
+      delay := delay + 1;
+      
+      if delay = 50 then
+        temp := '0'; 
+        delay := 0;
+      else temp := '1'; end if;
+    end if ris;
+    
+    newval <= temp;
+  end process HOLD;
+          
 end bhv;
