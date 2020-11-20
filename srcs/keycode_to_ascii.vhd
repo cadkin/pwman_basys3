@@ -20,23 +20,17 @@ begin
     /* detect when its a new key code but it needs to be shifted.
        it helps prevent converting when there is no code to convert. */
     
-    SET_SHIFT: process(all)
-        variable pshift : STD_LOGIC := '0';
-    begin 
-        if (keycodes(7 downto 0) = x"F0" and (keycodes(15 downto 8) = x"12" or keycodes(15 downto 8) = x"59")) 
-          or (pshift = '1' and (keycodes(7 downto 0) = x"12" or keycodes(7 downto 0) = x"59")) then
-            shift <= '1';
-        else shift <= '0';
-        end if; 
-                 
-        pshift := shift;
-    end process SET_SHIFT;
-    
-    
     process(all)
         variable count : integer range 0 to 4 := 0;
+        variable shift, pshift : STD_LOGIC := '0';
     begin ris: if rising_edge(clk) then 
     
+        if (keycodes(7 downto 0) = x"F0" and (keycodes(15 downto 8) = x"12" or keycodes(15 downto 8) = x"59")) 
+          or (pshift = '1' and (keycodes(7 downto 0) = x"12" or keycodes(7 downto 0) = x"59")) then
+            shift := '1';
+        else shift := '0'; end if; 
+        pshift := shift;     
+        
         if kpress = '1' and count < 4 then count := count + 1;
         else count := 0; end if;
        
