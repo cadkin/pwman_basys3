@@ -36,12 +36,14 @@ begin
   PRESS: process(all)
   begin
     setkeycodes: if reset = '1' then keycodes <= "0000000000000000"; 
-    elsif ukp = '1' and prevkp = '0' and rising_edge(clk) then
-      keycodes(15 downto 8) <= prev_in; keycodes(7 downto 0) <= kb_in;
-      set_kpress <= '1';
-      prev_in <= kb_in;
-    elsif rising_edge(clk) then
-      set_kpress <= '0';
+    elsif rising_edge(clk) then 
+      if ukp = '1' and prevkp = '0' then
+        keycodes(15 downto 8) <= prev_in; keycodes(7 downto 0) <= kb_in;
+        set_kpress <= '1';
+        prev_in <= kb_in;
+
+      else set_kpress <= '0';
+      end if;
     end if setkeycodes;
     
     updtflag: if rising_edge(clk) then prevkp <= ukp; end if updtflag;
