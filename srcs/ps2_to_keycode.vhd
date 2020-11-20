@@ -37,7 +37,7 @@ begin
     setkeycodes: if reset = '1' then keycodes <= "0000000000000000"; 
     elsif rising_edge(clk) then 
       if ukp = '1' and prevkp = '0' then
-        keycodes(15 downto 8) <= prev_in; keycodes(7 downto 0) <= kb_in;
+        keycodes(15 downto 8) <= kb_in; keycodes(7 downto 0) <= prev_in;
         kpress <= '1';
         prev_in <= kb_in;
 
