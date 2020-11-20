@@ -33,7 +33,7 @@ void term_print(char* str) {
         // Clock for 1 ms.
         *term_port ^= 0x80;
         _delay_us(500);
-        *term_port ^=0x80;
+        *term_port ^= 0x80;
         _delay_us(500);
     }
 }
@@ -53,65 +53,91 @@ void term_printf(const char* fmt, ...) {
     va_end(va);
 }
 
+ISR(PCINT0_vect) {
+    // Rising edge.
+    if (PINB & (1 << PINB0)) {
+        term_printf("%c", PINA & 0x7F);
+    }
+
+    // Dirty software debounce.
+    //_delay_ms(250);
+}
+
 int main() {
+    term_init(&PORTC);
+    term_printf("%s", DC2);
+
+    // Port A input.
+    DDRA = 0x00;
+    PORTA = 0x7F;
+    // PCINT0 input and pullup resistor.
+    DDRB = 0x00;
+    PORTB = 0x01;
+
+    //// Enable PCINT0 interrupt.
+    PCMSK0 |= (1 << PCINT0);
+    PCICR |= (1 << PCIE0);
+    sei();
+
+    for (;;) { }
+
+    //for (;;) {
+    //    term_printf("%s\n", (PINB & 0x01) ? "Y" : "N");
+    //}
+
     //char* str = "\nHello world, this is being print out over a serial communication between an AVR ATMEGA2560 and a Xillix XC7A35T!";
     //char* str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
     // Ascii Art, why not?
-    char* str = "\n\
-                                                                        ..;===+.\n\
-                                                                    .:=iiiiii=+=\n\
-                                                                 .=i))=;::+)i=+,\n\
-                                                              ,=i);)I)))I):=i=;\n\
-                                                           .=i==))))ii)))I:i++\n\
-                                                         +)+))iiiiiiii))I=i+:'\n\
-                                    .,:;;++++++;:,.       )iii+:::;iii))+i='\n\
-                                 .:;++=iiiiiiiiii=++;.    =::,,,:::=i));=+'\n\
-                               ,;+==ii)))))))))))ii==+;,      ,,,:=i))+=:\n\
-                             ,;+=ii))))))IIIIII))))ii===;.    ,,:=i)=i+\n\
-                            ;+=ii)))IIIIITIIIIII))))iiii=+,   ,:=));=,\n\
-                          ,+=i))IIIIIITTTTTITIIIIII)))I)i=+,,:+i)=i+\n\
-                         ,+i))IIIIIITTTTTTTTTTTTI))IIII))i=::i))i='\n\
-                        ,=i))IIIIITLLTTTTTTTTTTIITTTTIII)+;+i)+i`\n\
-                        =i))IIITTLTLTTTTTTTTTIITTLLTTTII+:i)ii:'\n\
-                       +i))IITTTLLLTTTTTTTTTTTTLLLTTTT+:i)))=,\n\
-                       =))ITTTTTTTTTTTLTTTTTTLLLLLLTi:=)IIiii;\n\
-                      .i)IIITTTTTTTTLTTTITLLLLLLLT);=)I)))))i;\n\
-                      :))IIITTTTTLTTTTTTLLHLLLLL);=)II)IIIIi=:\n\
-                      :i)IIITTTTTTTTTLLLHLLHLL)+=)II)ITTTI)i=\n\
-                      .i)IIITTTTITTLLLHHLLLL);=)II)ITTTTII)i+\n\
-                      =i)IIIIIITTLLLLLLHLL=:i)II)TTTTTTIII)i'\n\
-                    +i)i)))IITTLLLLLLLLT=:i)II)TTTTLTTIII)i;\n\
-                  +ii)i:)IITTLLTLLLLT=;+i)I)ITTTTLTTTII))i;\n\
-                 =;)i=:,=)ITTTTLTTI=:i))I)TTTLLLTTTTTII)i;\n\
-               +i)ii::,  +)IIITI+:+i)I))TTTTLLTTTTTII))=,\n\
-             :=;)i=:,,    ,i++::i))I)ITTTTTTTTTTIIII)=+'\n\
-           .+ii)i=::,,   ,,::=i)))iIITTTTTTTTIIIII)=+\n\
-          ,==)ii=;:,,,,:::=ii)i)iIIIITIIITIIII))i+:'\n\
-         +=:))i==;:::;=iii)+)=  `:i)))IIIII)ii+'\n\
-       .+=:))iiiiiiii)))+ii;\n\
-      .+=;))iiiiii)));ii+\n\
-     .+=i:)))))))=+ii+\n\
-    .;==i+::::=)i=;\n\
-    ,+==iiiiii+,\n\
-    `+=+++;`\n\
-    ";
+    //char* str = "\n\
+    //                                                                    ..;===+.\n\
+    //                                                                .:=iiiiii=+=\n\
+    //                                                             .=i))=;::+)i=+,\n\
+    //                                                          ,=i);)I)))I):=i=;\n\
+    //                                                       .=i==))))ii)))I:i++\n\
+    //                                                     +)+))iiiiiiii))I=i+:'\n\
+    //                                .,:;;++++++;:,.       )iii+:::;iii))+i='\n\
+    //                             .:;++=iiiiiiiiii=++;.    =::,,,:::=i));=+'\n\
+    //                           ,;+==ii)))))))))))ii==+;,      ,,,:=i))+=:\n\
+    //                         ,;+=ii))))))IIIIII))))ii===;.    ,,:=i)=i+\n\
+    //                        ;+=ii)))IIIIITIIIIII))))iiii=+,   ,:=));=,\n\
+    //                      ,+=i))IIIIIITTTTTITIIIIII)))I)i=+,,:+i)=i+\n\
+    //                     ,+i))IIIIIITTTTTTTTTTTTI))IIII))i=::i))i='\n\
+    //                    ,=i))IIIIITLLTTTTTTTTTTIITTTTIII)+;+i)+i`\n\
+    //                    =i))IIITTLTLTTTTTTTTTIITTLLTTTII+:i)ii:'\n\
+    //                   +i))IITTTLLLTTTTTTTTTTTTLLLTTTT+:i)))=,\n\
+    //                   =))ITTTTTTTTTTTLTTTTTTLLLLLLTi:=)IIiii;\n\
+    //                  .i)IIITTTTTTTTLTTTITLLLLLLLT);=)I)))))i;\n\
+    //                  :))IIITTTTTLTTTTTTLLHLLLLL);=)II)IIIIi=:\n\
+    //                  :i)IIITTTTTTTTTLLLHLLHLL)+=)II)ITTTI)i=\n\
+    //                  .i)IIITTTTITTLLLHHLLLL);=)II)ITTTTII)i+\n\
+    //                  =i)IIIIIITTLLLLLLHLL=:i)II)TTTTTTIII)i'\n\
+    //                +i)i)))IITTLLLLLLLLT=:i)II)TTTTLTTIII)i;\n\
+    //              +ii)i:)IITTLLTLLLLT=;+i)I)ITTTTLTTTII))i;\n\
+    //             =;)i=:,=)ITTTTLTTI=:i))I)TTTLLLTTTTTII)i;\n\
+    //           +i)ii::,  +)IIITI+:+i)I))TTTTLLTTTTTII))=,\n\
+    //         :=;)i=:,,    ,i++::i))I)ITTTTTTTTTTIIII)=+'\n\
+    //       .+ii)i=::,,   ,,::=i)))iIITTTTTTTTIIIII)=+\n\
+    //      ,==)ii=;:,,,,:::=ii)i)iIIIITIIITIIII))i+:'\n\
+    //     +=:))i==;:::;=iii)+)=  `:i)))IIIII)ii+'\n\
+    //   .+=:))iiiiiiii)))+ii;\n\
+    //  .+=;))iiiiii)));ii+\n\
+    // .+=i:)))))))=+ii+\n\
+    //.;==i+::::=)i=;\n\
+    //,+==iiiiii+,\n\
+    //`+=+++;`\n\
+    //";
 
-    srand(4);
-
-    term_init(&PORTC);
-
-    term_print(DC2);
+    //srand(4);
 
     //for (int i = 0; i < 7500; i++) {
     //    term_printf("%c", (rand() % 2) ? '/' : '\\');
     //}
 
-    for(;;) {
-        term_printf("%s\n", str);
-        _delay_ms(2000);
+    //for(;;) {
+    //    term_printf("%s\n", str);
+    //    _delay_ms(2000);
 
-        term_printf("%s", DC2);
-    }
+    //    term_printf("%s", DC2);
+    //}
 }
-
