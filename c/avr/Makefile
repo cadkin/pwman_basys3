@@ -3,10 +3,10 @@ HEX := $(NAME).hex
 OUT := $(NAME).elf
 MAP := $(NAME).map
 # For C.
-SOURCES := $(wildcard *.c)
+SOURCES := $(wildcard src/*.c)
 # For AVR ASM.
 #SOURCES := $(wildcard *.s)
-HEADERS := $(wildcard *.h)
+HEADERS := $(wildcard src/*.h)
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 
 MCU := atmega2560

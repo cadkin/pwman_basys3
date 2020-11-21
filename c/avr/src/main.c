@@ -7,83 +7,16 @@
 
 // AVR
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <util/delay.h>
 
-// Return to top.
-#define DC1 "\x11"
-// Clear screen.
-#define DC2 "\x12"
-
-volatile uint8_t* term_port = 0;
-volatile uint8_t* term_ddr  = 0;
-
-void term_init(volatile uint8_t* port) {
-    term_port = port;
-    term_ddr = port - 1;
-
-    // Set DDR to out.
-    *term_ddr = 0xFF;
-}
-
-void term_print(char* str) {
-    for (char* str_pos = str; *str_pos != '\0'; str_pos++) {
-        *term_port = (*str_pos) & 0x7F;
-
-        // Clock for 1 ms.
-        *term_port ^= 0x80;
-        _delay_us(500);
-        *term_port ^= 0x80;
-        _delay_us(500);
-    }
-}
-
-void term_printf(const char* fmt, ...) {
-    va_list va;
-    va_start(va, fmt);
-
-    // Getting buffer.
-    size_t bn = vsnprintf(0, 0, fmt, va);
-    char* buf = malloc(bn);
-
-    vsprintf(buf, fmt, va);
-    term_print(buf);
-
-    free(buf);
-    va_end(va);
-}
-
-ISR(PCINT0_vect) {
-    // Rising edge.
-    if (PINB & (1 << PINB0)) {
-        term_printf("%c", PINA & 0x7F);
-    }
-
-    // Dirty software debounce.
-    //_delay_ms(250);
-}
+// Local
+#include "term.h"
 
 int main() {
-    term_init(&PORTC);
-    term_printf("%s", DC2);
+    term_init(&PORTC, &PORTA);
+    term_printf("%sB3_PWMAN - V0.1a\nBUILD 20201120\n", DC1);
 
-    // Port A input.
-    DDRA = 0x00;
-    PORTA = 0x7F;
-    // PCINT0 input and pullup resistor.
-    DDRB = 0x00;
-    PORTB = 0x01;
-
-    //// Enable PCINT0 interrupt.
-    PCMSK0 |= (1 << PCINT0);
-    PCICR |= (1 << PCIE0);
-    sei();
-
-    for (;;) { }
-
-    //for (;;) {
-    //    term_printf("%s\n", (PINB & 0x01) ? "Y" : "N");
-    //}
+    _delay_ms(5000);
 
     //char* str = "\nHello world, this is being print out over a serial communication between an AVR ATMEGA2560 and a Xillix XC7A35T!";
     //char* str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
@@ -128,16 +61,5 @@ int main() {
     //`+=+++;`\n\
     //";
 
-    //srand(4);
-
-    //for (int i = 0; i < 7500; i++) {
-    //    term_printf("%c", (rand() % 2) ? '/' : '\\');
-    //}
-
-    //for(;;) {
-    //    term_printf("%s\n", str);
-    //    _delay_ms(2000);
-
-    //    term_printf("%s", DC2);
-    //}
+    for(;;) {}
 }
