@@ -83,7 +83,7 @@ int term_scanf(const char* fmt, ...) {
     // Block until newline.
     for (;;) {
         if (_term_buf[_term_buf_usage - 1] == '\n') break;
-        _delay_ms(500);
+        _delay_ms(100);
     }
 
     // Disable interrupts temporarily.

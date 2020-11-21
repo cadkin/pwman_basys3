@@ -11,12 +11,23 @@
 
 // Local
 #include "term.h"
+#include "pw.h"
 
 int main() {
     term_init(&PORTC, &PORTA);
-    term_printf("%sB3_PWMAN - V0.1a\nBUILD 20201120\n", DC2);
+    //term_printf("%sB3_PWMAN - V0.1a\nBUILD 20201121\n", DC1);
+    term_printf("%s", DC2);
 
-    _delay_ms(5000);
+    pw_struct** pws = load_pws();
+
+    //add_pw(pws, "Test Label 2", "122345");
+    del_pw(pws, 0);
+
+    print_pws(pws);
+
+    write_pws(pws);
+
+    //_delay_ms(5000);
 
     //char* str = "\nHello world, this is being print out over a serial communication between an AVR ATMEGA2560 and a Xillix XC7A35T!";
     //char* str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
@@ -61,12 +72,12 @@ int main() {
     //`+=+++;`\n\
     //";
 
-    char buf[200];
+    //char buf[200];
 
-    term_printf("Enter thing:");
-    term_scanf("%s", buf);
+    //term_printf("Enter thing:");
+    //term_scanf("%s", buf);
 
-    term_printf("\nGot: %s", buf);
+    //term_printf("\nGot: %s", buf);
 
     for(;;) {}
 }
