@@ -1,25 +1,3 @@
---------------------------------------------------------------------------------
---
---   FileName:         ps2_keyboard_to_ascii.vhd
---   Dependencies:     ps2_keyboard.vhd, debounce.vhd
---   Design Software:  Quartus II 32-bit Version 12.1 Build 177 SJ Full Version
---
---   HDL CODE IS PROVIDED "AS IS."  DIGI-KEY EXPRESSLY DISCLAIMS ANY
---   WARRANTY OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT
---   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
---   PARTICULAR PURPOSE, OR NON-INFRINGEMENT. IN NO EVENT SHALL DIGI-KEY
---   BE LIABLE FOR ANY INCIDENTAL, SPECIAL, INDIRECT OR CONSEQUENTIAL
---   DAMAGES, LOST PROFITS OR LOST DATA, HARM TO YOUR EQUIPMENT, COST OF
---   PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR SERVICES, ANY CLAIMS
---   BY THIRD PARTIES (INCLUDING BUT NOT LIMITED TO ANY DEFENSE THEREOF),
---   ANY CLAIMS FOR INDEMNITY OR CONTRIBUTION, OR OTHER SIMILAR COSTS.
---
---   Version History
---   Version 1.0 11/29/2013 Scott Larson
---     Initial Public Release
---    
---------------------------------------------------------------------------------
-
 LIBRARY ieee;
 USE ieee.std_logic_1164.all;
 
@@ -76,17 +54,17 @@ BEGIN
     IF(clk'EVENT AND clk = '1') THEN
       prev_ps2_code_new <= ps2_code_new; --keep track of previous ps2_code_new values to determine low-to-high transitions
       CASE state IS
-      
+
         --ready state: wait for a new PS2 code to be received
         WHEN ready =>
           IF(prev_ps2_code_new = '0' AND ps2_code_new = '1') THEN --new PS2 code received
-            ascii_new <= '0';                                       --reset new ASCII code indicator
+            ascii_update <= '0';                                    -- reset new ascii code indicator
             state <= new_code;                                      --proceed to new_code state
           ELSE                                                    --no new PS2 code received yet
             state <= ready;                                         --remain in ready state
           END IF;
-          
-        --new_code state: determine what to do with the new PS2 code  
+
+        --new_code state: determine what to do with the new PS2 code
         WHEN new_code =>
           IF(ps2_code = x"F0") THEN    --code indicates that next command is break
             break <= '1';                --set break flag
@@ -103,7 +81,7 @@ BEGIN
         WHEN translate =>
             break <= '0';    --reset break flag
             e0_code <= '0';  --reset multi-code command flag
-            
+
             --handle codes for control, shift, and caps lock
             CASE ps2_code IS
               WHEN x"58" =>                   --caps lock code
@@ -122,7 +100,7 @@ BEGIN
                 shift_r <= NOT break;           --update right shift flag
               WHEN OTHERS => NULL;
             END CASE;
-        
+
             --translate control codes (these do not depend on shift or caps lock)
             IF(control_l = '1' OR control_r = '1') THEN
               CASE ps2_code IS
@@ -161,8 +139,8 @@ BEGIN
                 WHEN x"4A" => ascii <= x"7F"; --^?  DEL
                 WHEN OTHERS => NULL;
               END CASE;
-            ELSE --if control keys are not pressed  
-            
+            ELSE --if control keys are not pressed
+
               --translate characters that do not depend on shift, or caps lock
               CASE ps2_code IS
                 WHEN x"29" => ascii <= x"20"; --space
@@ -170,17 +148,17 @@ BEGIN
                 WHEN x"0D" => ascii <= x"09"; --tab (HT control code)
                 WHEN x"5A" => ascii <= x"0D"; --enter (CR control code)
                 WHEN x"76" => ascii <= x"1B"; --escape (ESC control code)
-                WHEN x"71" => 
+                WHEN x"71" =>
                   IF(e0_code = '1') THEN      --ps2 code for delete is a multi-key code
                     ascii <= x"7F";             --delete
                   END IF;
                 WHEN OTHERS => NULL;
               END CASE;
-              
+
               --translate letters (these depend on both shift and caps lock)
               IF((shift_r = '0' AND shift_l = '0' AND caps_lock = '0') OR
                 ((shift_r = '1' OR shift_l = '1') AND caps_lock = '1')) THEN  --letter is lowercase
-                CASE ps2_code IS              
+                CASE ps2_code IS
                   WHEN x"1C" => ascii <= x"61"; --a
                   WHEN x"32" => ascii <= x"62"; --b
                   WHEN x"21" => ascii <= x"63"; --c
@@ -210,7 +188,7 @@ BEGIN
                   WHEN OTHERS => NULL;
                 END CASE;
               ELSE                                     --letter is uppercase
-                CASE ps2_code IS            
+                CASE ps2_code IS
                   WHEN x"1C" => ascii <= x"41"; --A
                   WHEN x"32" => ascii <= x"42"; --B
                   WHEN x"21" => ascii <= x"43"; --C
@@ -240,16 +218,16 @@ BEGIN
                   WHEN OTHERS => NULL;
                 END CASE;
               END IF;
-              
+
               --translate numbers and symbols (these depend on shift but not caps lock)
               IF(shift_l = '1' OR shift_r = '1') THEN  --key's secondary character is desired
-                CASE ps2_code IS              
+                CASE ps2_code IS
                   WHEN x"16" => ascii <= x"21"; --!
                   WHEN x"52" => ascii <= x"22"; --"
                   WHEN x"26" => ascii <= x"23"; --#
                   WHEN x"25" => ascii <= x"24"; --$
                   WHEN x"2E" => ascii <= x"25"; --%
-                  WHEN x"3D" => ascii <= x"26"; --&              
+                  WHEN x"3D" => ascii <= x"26"; --&
                   WHEN x"46" => ascii <= x"28"; --(
                   WHEN x"45" => ascii <= x"29"; --)
                   WHEN x"3E" => ascii <= x"2A"; --*
@@ -268,7 +246,7 @@ BEGIN
                   WHEN OTHERS => NULL;
                 END CASE;
               ELSE                                     --key's primary character is desired
-                CASE ps2_code IS  
+                CASE ps2_code IS
                   WHEN x"45" => ascii <= x"30"; --0
                   WHEN x"16" => ascii <= x"31"; --1
                   WHEN x"1E" => ascii <= x"32"; --2
@@ -293,15 +271,15 @@ BEGIN
                   WHEN OTHERS => NULL;
                 END CASE;
               END IF;
-              
+
             END IF;
-          
+
           IF(break = '0') THEN  --the code is a make
             state <= output;      --proceed to output state
           ELSE                  --code is a break
             state <= ready;       --return to ready state to await next PS2 code
           END IF;
-        
+
         --output state: verify the code is valid and output the ASCII value
         WHEN output =>
           IF(ascii(7) = '0') THEN            --the PS2 code has an ASCII output
@@ -313,24 +291,25 @@ BEGIN
       END CASE;
     END IF;
   END PROCESS;
-  
+
   -- Delay 50 Clock cycles
   HOLD: process(all)
-    variable delay : integer := 0;
-    variable temp : STD_LOGIC := '0';
+    variable delay : integer range 0 to 50 := 0;
+    variable temp : std_logic := '0';
   begin ris: if rising_edge(clk) and (delay > 0 or ascii_update = '1') then
       delay := delay + 1;
-      
+
       if delay = 50 then
-        temp := '0'; 
+        temp := '0';
         delay := 0;
       else temp := '1'; end if;
     end if ris;
-    
+
     ascii_new <= temp;
   end process HOLD;
 
 END behavior;
+
 
 
 
