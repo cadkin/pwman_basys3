@@ -20,12 +20,14 @@ int main() {
 
     pw_struct** pws = load_pws();
 
-    //add_pw(pws, "Test Label 2", "122345");
-    del_pw(pws, 0);
+    add_pw(&pws, "Test Label 3", "122345");
+    add_pw(&pws, "Test Label 3", "122345");
+    add_pw(&pws, "Test Label 3", "122345");
+    add_pw(&pws, "Test Label 3", "122345");
 
     print_pws(pws);
 
-    write_pws(pws);
+    //write_pws(pws);
 
     //_delay_ms(5000);
 
