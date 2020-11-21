@@ -27,7 +27,6 @@ ARCHITECTURE behavior OF ps2_keyboard_to_ascii IS
   SIGNAL shift_r           : STD_LOGIC := '0';                      --'1' if right shift is held down, else '0'
   SIGNAL shift_l           : STD_LOGIC := '0';                      --'1' if left shift is held down, else '0'
   SIGNAL ascii             : STD_LOGIC_VECTOR(7 DOWNTO 0) := x"FF"; --internal value of ASCII translation
-  SIGNAL ascii_update      : STD_LOGIC := '0';
 
   --declare PS2 keyboard interface component
   COMPONENT ps2_keyboard IS
@@ -58,7 +57,7 @@ BEGIN
         --ready state: wait for a new PS2 code to be received
         WHEN ready =>
           IF(prev_ps2_code_new = '0' AND ps2_code_new = '1') THEN --new PS2 code received
-            ascii_update <= '0';                                    -- reset new ascii code indicator
+            ascii_new <= '0';                                    -- reset new ascii code indicator
             state <= new_code;                                      --proceed to new_code state
           ELSE                                                    --no new PS2 code received yet
             state <= ready;                                         --remain in ready state
@@ -283,7 +282,7 @@ BEGIN
         --output state: verify the code is valid and output the ASCII value
         WHEN output =>
           IF(ascii(7) = '0') THEN            --the PS2 code has an ASCII output
-            ascii_update <= '1';                  --set flag indicating new ASCII output
+            ascii_new <= '1';                  --set flag indicating new ASCII output
             ascii_code <= ascii(6 DOWNTO 0);   --output the ASCII value
           END IF;
           state <= ready;                    --return to ready state to await next PS2 code
@@ -291,25 +290,4 @@ BEGIN
       END CASE;
     END IF;
   END PROCESS;
-
-  -- Delay 50 Clock cycles
-  HOLD: process(all)
-    variable delay : integer range 0 to 50 := 0;
-    variable temp : std_logic := '0';
-  begin ris: if rising_edge(clk) and (delay > 0 or ascii_update = '1') then
-      delay := delay + 1;
-
-      if delay = 50 then
-        temp := '0';
-        delay := 0;
-      else temp := '1'; end if;
-    end if ris;
-
-    ascii_new <= temp;
-  end process HOLD;
-
 END behavior;
-
-
-
-
