@@ -10,3 +10,4 @@
 void term_init(volatile uint8_t* stdout_port, volatile uint8_t* stdin_port);
 void term_print(char* str);
 void term_printf(const char* fmt, ...);
+int term_scanf(const char* fmt, ...);

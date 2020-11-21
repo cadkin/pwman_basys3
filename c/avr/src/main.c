@@ -14,7 +14,7 @@
 
 int main() {
     term_init(&PORTC, &PORTA);
-    term_printf("%sB3_PWMAN - V0.1a\nBUILD 20201120\n", DC1);
+    term_printf("%sB3_PWMAN - V0.1a\nBUILD 20201120\n", DC2);
 
     _delay_ms(5000);
 
@@ -60,6 +60,13 @@ int main() {
     //,+==iiiiii+,\n\
     //`+=+++;`\n\
     //";
+
+    char buf[200];
+
+    term_printf("Enter thing:");
+    term_scanf("%s", buf);
+
+    term_printf("\nGot: %s", buf);
 
     for(;;) {}
 }
