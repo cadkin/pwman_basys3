@@ -4,8 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity route is
     Port (clk       : in std_logic;
-          ps2_clk   : in std_logic;
-          ps2_data  : in std_logic;
+          ja        : in std_logic_vector(3 downto 0);
           jb        : in std_logic_vector(7 downto 0);
           jc        : out std_logic_vector(7 downto 0);
           vga_r     : out std_logic_vector(3 downto 0);
@@ -36,7 +35,6 @@ begin
          port map(clk => clk, len => 50000, sig => jb(7), db => jb_db);
 
     ps2 : entity work.ps2_keyboard_to_ascii
-          port map(clk => clk, ps2_clk => ps2_clk, ps2_data => ps2_data,
+          port map(clk => clk, ps2_clk => ja(2), ps2_data => ja(0),
                    ascii_new => jc(7), ascii_code => jc(6 downto 0));
 end behavior;
-
