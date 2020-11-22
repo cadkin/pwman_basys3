@@ -117,15 +117,19 @@ void write_pws(pw_struct** pws) {
     eeprom_write_word(&_pw_sto_start, pw_count);
 }
 
-void print_pws(pw_struct** pws) {
+int print_pws(pw_struct** pws) {
+    int i = 0;
+
     term_printf("=========================================================\n");
-    term_printf("| %-25s | %-25s |\n", "Name", "Password");
+    term_printf("| %-3s | %-18s | %-25s |\n", "Idx", "Name", "Password");
     term_printf("=========================================================\n");
-    for (int i = 0; pws[i]->label != 0; i++) {
+    for (i = 0; pws[i]->label != 0; i++) {
         // Bad/removed password.
         if(pws[i]->label[0] == '\x18') continue;
 
-        term_printf("| %-25.25s | %-25.25s |\n", pws[i]->label, pws[i]->pw);
+        term_printf("| %-3d | %-18.18s | %-25.25s |\n", i, pws[i]->label, pws[i]->pw);
     }
     term_printf("=========================================================\n");
+
+    return i;
 }

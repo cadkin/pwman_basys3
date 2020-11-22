@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // AVR
 #include <avr/io.h>
@@ -12,20 +13,119 @@
 // Local
 #include "term.h"
 #include "pw.h"
+#include "message.h"
 
 int main() {
     term_init(&PORTC, &PORTA);
-    //term_printf("%sB3_PWMAN - V0.1a\nBUILD 20201121\n", DC1);
-    term_printf("%s", DC2);
+    char buf[200];
+    char* ascii = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+    srand(PINB);
+
+    print_intro();
+    term_scanf("");
 
     pw_struct** pws = load_pws();
 
-    add_pw(&pws, "Test Label 3", "122345");
-    add_pw(&pws, "Test Label 3", "122345");
-    add_pw(&pws, "Test Label 3", "122345");
-    add_pw(&pws, "Test Label 3", "122345");
+    start:
 
-    print_pws(pws);
+    print_menu();
+
+    int selection = 0;
+
+    term_printf("Selection? : ");
+    term_scanf("%d", &selection);
+
+    term_printf("Selection: %d\n", selection);
+
+    switch(selection) {
+        case 1: {
+            print_clear();
+            print_pws(pws);
+            goto end;
+        }
+        case 2: {
+            term_printf("Enter a new name for the password: ");
+            term_scanf("%[^\n]", buf);
+
+            int lb_len = strlen(buf);
+            char* lb = malloc(lb_len + 1);
+            strcpy(lb, buf);
+
+            term_printf("Enter the password: ");
+            term_scanf("%[^\n]", buf);
+
+            int pw_len = strlen(buf);
+            char* pw = malloc(pw_len + 1);
+            strcpy(pw, buf);
+
+            add_pw(&pws, lb, pw);
+            write_pws(pws);
+
+            goto end;
+        }
+        case 3: {
+            term_printf("Enter a new name for the password: ");
+            term_scanf("%[^\n]", buf);
+
+            int lb_len = strlen(buf);
+            char* lb = malloc(lb_len + 1);
+            strcpy(lb, buf);
+
+            int pw_len;
+            char* pw;
+
+            for (;;) {
+                pw_len = (rand() % 19) + 5;
+                pw = malloc(pw_len + 1);
+                for (int i = 0; i <= pw_len; i++) {
+                    pw[i] = ascii[rand() % 96];
+                }
+
+                pw[pw_len + 1] = '\0';
+
+                term_printf("\n\nThe generated password is: %s\n", pw);
+                term_printf("Is this OK [y/n]: ");
+
+                char response = 'n';
+                term_scanf("%c", &response);
+
+                if (response == 'y' || response == 'Y') {
+                    break;
+                }
+
+                free(pw);
+            }
+
+            add_pw(&pws, lb, pw);
+            write_pws(pws);
+
+            goto end;
+        }
+        case 4: {
+            print_clear();
+            int count = print_pws(pws);
+            int sel = 0;
+
+            term_printf("\n\nDelete which index? : ");
+            term_scanf("%d", &sel);
+
+            if (sel < count) {
+                del_pw(&pws, sel);
+                term_printf("Sucessfully deleted password #%d\n", sel);
+            }
+            else {
+                term_printf("Unknown input.\n");
+            }
+
+            goto end;
+        }
+    }
+
+    end:
+        term_printf("\n\nOperation completed, press enter to return to menu...");
+        term_scanf("");
+        print_clear();
+    goto start;
 
     //write_pws(pws);
 
@@ -80,6 +180,4 @@ int main() {
     //term_scanf("%s", buf);
 
     //term_printf("\nGot: %s", buf);
-
-    for(;;) {}
 }
